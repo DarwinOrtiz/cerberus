@@ -41,8 +41,11 @@ class CheckCycleJob : JobService() {
 
             val db = (application as ThisApplication).db!!
 
-            val timestamp = System.currentTimeMillis();
-            val checks = db.checkConfigDao().all()
+            val timestamp = System.currentTimeMillis()
+            val checks = db.checkConfigDao().all().map { it.uid to it }.toMap()
+
+            var referenceTotal = 0
+            var referenceSucceeded = 0
 
             val threadPool = Executors.newCachedThreadPool()
             try {
@@ -52,7 +55,7 @@ class CheckCycleJob : JobService() {
                         var content = ""
                         var error: String? = null
                         try {
-                            val request = URL(it.url).openConnection() as HttpURLConnection
+                            val request = URL(it.value.url).openConnection() as HttpURLConnection
                             try {
                                 statusCode = request.responseCode
                                 BufferedReader(
@@ -80,26 +83,43 @@ class CheckCycleJob : JobService() {
                             error = e.message
                         }
                         CheckResult(
-                            0,
-                            timestamp,
-                            it.uid,
-                            if (it.statusCode != null) statusCode == it.statusCode else null,
-                            if (it.contentMatch != null) content.contains(it.contentMatch) else null,
-                            error,
-                            false
-                        ).let {
-                            it.copy(
-                                succeeded = (it.status_code_ok == null || it.status_code_ok)
-                                        && (it.content_ok == null || it.content_ok)
-                                        && it.error_message == null
-                            )
-                        }
+                            uid = 0,
+                            timestampUtc = timestamp,
+                            configUid = it.key,
+                            status_code_ok = if (it.value.statusCode != null) statusCode == it.value.statusCode!! else null,
+                            content_ok = if (it.value.contentMatch != null) content.contains(it.value.contentMatch!!) else null,
+                            error_message = error,
+                            succeeded = false,
+                            skip = false
+                        )
                     })
+                }.map {
+                    it.get()
+                }.map {
+                    it.copy(
+                        succeeded = (it.status_code_ok == null || it.status_code_ok)
+                                && (it.content_ok == null || it.content_ok)
+                                && it.error_message == null
+                    )
                 }.onEach {
-                    val result = it.get()
-                    Log.d("CHECK_CONFIG", db.checkConfigDao().byUid(result.configUid).toString())
-                    Log.d("CHECK_RESULT", result.toString())
-                    db.checkResultDao().insert(result)
+                    if (checks.getValue(it.configUid).isReference) {
+                        referenceTotal++
+                        if (it.succeeded) {
+                            referenceSucceeded++
+                        }
+                    }
+                }.map {
+                    if (!checks.getValue(it.configUid).isReference) {
+                        it.copy(
+                            skip = (referenceSucceeded / referenceTotal.toDouble()) < Constants.CHECK_CYCLE_REQUIRED_REFERENCE_SUCCESS
+                        )
+                    } else {
+                        it
+                    }
+                }.onEach {
+                    Log.d("CHECK_CONFIG", checks.getValue(it.configUid).toString())
+                    Log.d("CHECK_RESULT", it.toString())
+                    db.checkResultDao().insert(it)
                 }
             } finally {
                 threadPool.shutdown()

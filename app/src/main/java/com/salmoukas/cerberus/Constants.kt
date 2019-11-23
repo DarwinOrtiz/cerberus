@@ -16,5 +16,6 @@ class Constants {
         // check cycle
         const val INTERVAL_CHECK_CYCLE_MINUTES = 1 // 5
         const val JOB_ID_CHECK_CYCLE = 1
+        const val CHECK_CYCLE_REQUIRED_REFERENCE_SUCCESS = 2 / 3.toDouble()
     }
 }

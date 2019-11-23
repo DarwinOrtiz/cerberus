@@ -12,5 +12,6 @@ data class CheckResult(
     @ColumnInfo(name = "status_code_ok") val status_code_ok: Boolean?,
     @ColumnInfo(name = "content_ok") val content_ok: Boolean?,
     @ColumnInfo(name = "error_message") val error_message: String?,
-    @ColumnInfo(name = "succeeded") val succeeded: Boolean
+    @ColumnInfo(name = "succeeded") val succeeded: Boolean,
+    @ColumnInfo(name = "skip") val skip: Boolean
 )

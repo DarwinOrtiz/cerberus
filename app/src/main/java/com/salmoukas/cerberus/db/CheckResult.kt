@@ -1,12 +1,23 @@
 package com.salmoukas.cerberus.db
 
-import androidx.room.ColumnInfo
-import androidx.room.Entity
-import androidx.room.PrimaryKey
+import androidx.room.*
 
-@Entity(tableName = "check_result")
+@Entity(
+    tableName = "check_result",
+    foreignKeys = [ForeignKey(
+        entity = CheckConfig::class,
+        parentColumns = ["uid"],
+        childColumns = ["config_uid"],
+        onDelete = ForeignKey.CASCADE,
+        onUpdate = ForeignKey.RESTRICT
+    )],
+    indices = [
+        Index(value = ["config_uid"]),
+        Index(value = ["timestamp_utc"])
+    ]
+)
 data class CheckResult(
-    @PrimaryKey(autoGenerate = true) val uid: Long,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "uid") val uid: Long,
     @ColumnInfo(name = "timestamp_utc") val timestampUtc: Long,
     @ColumnInfo(name = "config_uid") val configUid: Long,
     @ColumnInfo(name = "status_code_ok") val status_code_ok: Boolean?,

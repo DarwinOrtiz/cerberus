@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "check_config")
 data class CheckConfig(
-    @PrimaryKey(autoGenerate = true) val uid: Long,
+    @PrimaryKey(autoGenerate = true) @ColumnInfo(name = "uid") val uid: Long,
     @ColumnInfo(name = "is_reference") val isReference: Boolean,
     @ColumnInfo(name = "url") val url: String,
     @ColumnInfo(name = "status_code") val statusCode: Int?,

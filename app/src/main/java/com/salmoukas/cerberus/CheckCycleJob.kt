@@ -41,7 +41,7 @@ class CheckCycleJob : JobService() {
 
             val db = (application as ThisApplication).db!!
 
-            val timestamp = System.currentTimeMillis()
+            val timestamp = System.currentTimeMillis() / 1000L
             val checks = db.checkConfigDao().all().map { it.uid to it }.toMap()
 
             var referenceTotal = 0

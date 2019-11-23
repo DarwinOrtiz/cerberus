@@ -1,24 +1,13 @@
 package com.salmoukas.cerberus.db
 
+import androidx.lifecycle.LiveData
 import androidx.room.*
 
 @Dao
 interface CheckResultDao {
-    @Query("SELECT * FROM check_result")
-    fun all(): List<CheckResult>
-
-    @Query("SELECT * FROM check_result WHERE uid = :uid")
-    fun byUid(uid: Long): CheckResult
+    @Query("SELECT * FROM check_result WHERE timestamp_utc >= (strftime('%s','now') - :window)")
+    fun latestLive(window: Long): LiveData<List<CheckResult>>
 
     @Insert
     fun insert(checkResult: CheckResult): Long
-
-    @Insert
-    fun insert(vararg checkResults: CheckResult): List<Long>
-
-    @Update
-    fun update(checkResult: CheckResult): Int
-
-    @Delete
-    fun delete(checkResult: CheckResult)
 }

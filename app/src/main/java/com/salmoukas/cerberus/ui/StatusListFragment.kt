@@ -54,7 +54,7 @@ class StatusListFragment : Fragment() {
                     refreshListAdapterModel()
                 })
 
-        db.checkResultDao().windowLive(Constants.CHECK_STATUS_WINDOW_SECONDS)
+        db.checkResultDao().periodLive(Constants.CHECK_STATUS_PERIOD_SECONDS)
             .observe(
                 viewLifecycleOwner,
                 Observer<List<CheckResult>> { records ->
@@ -95,7 +95,7 @@ class StatusListFragment : Fragment() {
     private fun refreshListAdapterModel() {
         val now = System.currentTimeMillis() / 1000L
         listAdapter.adapterModel = StatusListAdapter.AdapterModel(
-            range = TimeRange(now - Constants.CHECK_STATUS_WINDOW_SECONDS, now),
+            range = TimeRange(now - Constants.CHECK_STATUS_PERIOD_SECONDS, now),
             checks = checkConfigs.map { cit ->
                 var nextBegin: Long? = null
                 StatusListAdapter.AdapterModel.Check(
@@ -104,8 +104,9 @@ class StatusListFragment : Fragment() {
                         .sortedBy { rit -> rit.timestampUtc }
                         .map { rit ->
                             val ourBegin = max(
-                                nextBegin ?: rit.timestampUtc - Constants.CHECK_CYCLE_INTERVAL_MINUTES * 60,
-                                rit.timestampUtc - Constants.CHECK_SAMPLE_MAX_VALIDITY_MINUTES * 60
+                                nextBegin ?: rit.timestampUtc
+                                - Constants.CHECK_CYCLE_INTERVAL_MINUTES * 60,
+                                rit.timestampUtc - Constants.CHECK_STATUS_RETROGRADE_VALIDITY_MINUTES * 60
                             )
                             nextBegin = rit.timestampUtc
                             TimeRangeWithCheckStatus(
@@ -121,12 +122,18 @@ class StatusListFragment : Fragment() {
                                 }
                             )
                         },
-                    latest = null
+                    latest = null,
+                    stale = true
                 ).let {
                     if (it.results.isNotEmpty()) {
                         it.copy(latest = it.results.last())
+                    } else {
+                        it
                     }
-                    else {
+                }.let {
+                    if (it.latest != null && (now - it.latest.end) < Constants.CHECK_STATUS_STALE_AFTER_SECONDS) {
+                        it.copy(stale = false)
+                    } else {
                         it
                     }
                 }

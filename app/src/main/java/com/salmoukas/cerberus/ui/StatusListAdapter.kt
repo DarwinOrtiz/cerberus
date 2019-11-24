@@ -22,7 +22,8 @@ class StatusListAdapter :
         data class Check(
             val url: String,
             val results: List<TimeRangeWithCheckStatus>,
-            val latest: TimeRangeWithCheckStatus?
+            val latest: TimeRangeWithCheckStatus?,
+            val stale: Boolean
         )
     }
 
@@ -49,15 +50,32 @@ class StatusListAdapter :
                 holder.itemView.findViewById<TextView>(R.id.status_item_url_view).text = it.url
                 holder.itemView.findViewById<TextView>(R.id.status_item_text_view).apply {
                     val now = System.currentTimeMillis() / 1000L
-                    val ago = if (it.latest != null) now - it.latest.end else null
-                    val agoStr =
-                        if (ago != null) (
-                                if (ago >= (60 * 60)) (ago / (60 * 60)).toString() + " hours"
-                                else (ago / 60).toString() + " minutes")
-                        else null
-                    text = (if (agoStr != null) "$agoStr ago: " else "") +
-                            (it.latest?.message ?: "unknown status")
-                    setBackgroundColor(if (it.latest?.ok == true) Color.GREEN else Color.RED)
+                    val message = it.latest?.message ?: "unknown status"
+                    text = when {
+                        it.latest != null -> now - it.latest.end
+                        else -> null
+                    }.let { ago ->
+                        when {
+                            ago == null -> message
+                            (ago >= (60 * 60)) -> resources.getString(
+                                R.string.status_list_hours_ago,
+                                ago / (60 * 60),
+                                message
+                            )
+                            else -> resources.getString(
+                                R.string.status_list_minutes_ago,
+                                ago / 60,
+                                message
+                            )
+                        }
+                    }
+                    setBackgroundColor(
+                        when {
+                            it.stale -> Color.YELLOW
+                            it.latest?.ok == true -> Color.GREEN
+                            else -> Color.RED
+                        }
+                    )
                 }
                 holder.itemView.findViewById<CheckTimelineView>(R.id.status_item_timeline_view)
                     .viewModel =

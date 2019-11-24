@@ -55,7 +55,7 @@ class MainService : Service() {
         // create notification and post service to foreground
         startForeground(
             Constants.MONITORING_PRIMARY_NOTIFICATION_ID,
-            buildPrimaryNotification(null)
+            buildPrimaryNotification(null, null)
         )
     }
 
@@ -188,9 +188,12 @@ class MainService : Service() {
         val db = (application as ThisApplication).db!!
 
         val checkConfigs = db.checkConfigDao().targets()
-        val checkResults = db.checkResultDao().window(Constants.CHECK_STATUS_WINDOW_SECONDS)
+        val checkResults = db.checkResultDao().period(Constants.CHECK_STATUS_PERIOD_SECONDS)
 
         var failedChecks = 0
+        var staleChecks = 0
+
+        val now = System.currentTimeMillis() / 1000L
 
         checkConfigs.onEach { cit ->
             checkResults.filter { rit -> cit.uid == rit.configUid && !rit.skip }
@@ -199,13 +202,16 @@ class MainService : Service() {
                     if (it != null && !it.succeeded) {
                         failedChecks += 1
                     }
+                    if (it == null || (now - it.timestampUtc) >= Constants.CHECK_STATUS_STALE_AFTER_SECONDS) {
+                        staleChecks += 1
+                    }
                 }
         }
 
         (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
             .notify(
                 Constants.MONITORING_PRIMARY_NOTIFICATION_ID,
-                buildPrimaryNotification(failedChecks)
+                buildPrimaryNotification(failedChecks, staleChecks)
             )
 
         if (failedChecks > 0) {
@@ -213,7 +219,7 @@ class MainService : Service() {
                 (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
                     .notify(
                         Constants.MONITORING_ERROR_NOTIFICATION_ID,
-                        buildErrorNotification(failedChecks)
+                        buildErrorNotification(failedChecks, staleChecks)
                     )
                 lastErrorNotification = System.currentTimeMillis()
             }
@@ -224,17 +230,31 @@ class MainService : Service() {
         }
     }
 
-    private fun buildPrimaryNotification(failedChecks: Int?): Notification {
-
-        val text = when (failedChecks) {
-            null -> resources.getString(R.string.notification_init)
-            0 -> resources.getString(R.string.notification_ok)
-            else -> resources.getString(R.string.notification_error, failedChecks)
+    private fun buildNotificationText(failedChecks: Int?, staleChecks: Int?): String {
+        return when {
+            (failedChecks == null || staleChecks == null) -> resources.getString(R.string.notification_init)
+            (failedChecks == 0 && staleChecks == 0) -> resources.getString(R.string.notification_ok)
+            (failedChecks > 0 && staleChecks > 0) -> resources.getString(
+                R.string.notification_error_failed_stale,
+                failedChecks,
+                staleChecks
+            )
+            (failedChecks > 0) -> resources.getString(
+                R.string.notification_error_failed,
+                failedChecks
+            )
+            else -> resources.getString(R.string.notification_error_stale, staleChecks)
         }
+    }
 
-        val icon = when (failedChecks) {
-            null -> R.drawable.ic_launcher_foreground
-            0 -> R.drawable.ic_launcher_foreground
+    private fun buildPrimaryNotification(failedChecks: Int?, staleChecks: Int?): Notification {
+
+        val text = buildNotificationText(failedChecks, staleChecks)
+
+        val icon = when {
+            (failedChecks == null || staleChecks == null) -> R.drawable.ic_launcher_foreground
+            (failedChecks == 0 && staleChecks == 0) -> R.drawable.ic_launcher_foreground
+            (failedChecks == 0 && staleChecks > 0) -> R.drawable.ic_launcher_foreground
             else -> R.drawable.ic_launcher_foreground
         }
 
@@ -243,6 +263,8 @@ class MainService : Service() {
             .setContentText(text)
             .setStyle(Notification.BigTextStyle().bigText(text))
             .setSmallIcon(icon)
+            .setWhen(System.currentTimeMillis())
+            .setShowWhen(true)
             .setContentIntent(
                 PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), 0)
             )
@@ -250,22 +272,19 @@ class MainService : Service() {
             .build()
     }
 
-    private fun buildErrorNotification(failedChecks: Int): Notification {
+    private fun buildErrorNotification(failedChecks: Int, staleChecks: Int): Notification {
+
+        val text = buildNotificationText(failedChecks, staleChecks)
 
         return Notification.Builder(this, Constants.MONITORING_ERROR_NOTIFICATION_CHANNEL)
             .setContentTitle(resources.getString(R.string.app_name))
-            .setContentText(resources.getString(R.string.notification_error, failedChecks))
-            .setStyle(
-                Notification.BigTextStyle().bigText(
-                    resources.getString(
-                        R.string.notification_error,
-                        failedChecks
-                    )
-                )
-            )
+            .setContentText(text)
+            .setStyle(Notification.BigTextStyle().bigText(text))
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setColor(Color.RED)
             .setColorized(true)
+            .setWhen(System.currentTimeMillis())
+            .setShowWhen(true)
             .setContentIntent(
                 PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), 0)
             )

@@ -1,7 +1,12 @@
 <resources>
     <string name="app_name">Cerberus</string>
+    <string name="menu_main_action_settings">Settings</string>
     <string name="notification_init">Initializing…</string>
     <string name="notification_ok">All checks OK</string>
-    <string name="notification_error">%1$d checks FAILED!</string>
-    <string name="menu_main_action_settings">Settings</string>
+    <string name="notification_error_failed">%1$d checks FAILED!</string>
+    <string name="notification_error_stale">%1$d checks STALE!</string>
+    <string name="notification_error_failed_stale">%1$d checks FAILED and %2$d checks STALE!</string>
+    <string name="status_list_minutes_ago">%1$d minutes ago: %2$s</string>
+    <string name="status_list_hours_ago">%1$d minutes ago: %2$s</string>
+    <string name="status_list_unknown">unknown status</string>
 </resources>

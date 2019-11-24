@@ -98,6 +98,9 @@ class MainService : Service() {
 
         val db = (application as ThisApplication).db!!
 
+        db.checkResultDao()
+            .deleteOlderThan(TimeUnit.MINUTES.toSeconds(Constants.CHECK_CYCLE_PURGE_OLDER_THAN_MINUTES.toLong()))
+
         val timestamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
         val checks = db.checkConfigDao().all().map { it.uid to it }.toMap()
 

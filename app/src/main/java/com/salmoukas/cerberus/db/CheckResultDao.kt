@@ -13,4 +13,7 @@ interface CheckResultDao {
 
     @Insert
     fun insert(checkResult: CheckResult): Long
+
+    @Query("DELETE FROM check_result WHERE timestamp_utc < (strftime('%s','now') - :period)")
+    fun deleteOlderThan(period: Long): Int
 }

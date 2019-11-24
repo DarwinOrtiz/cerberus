@@ -8,6 +8,7 @@ import android.os.PowerManager
 import android.util.Log
 import com.salmoukas.cerberus.db.CheckResult
 import java.io.BufferedReader
+import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -115,7 +116,9 @@ class MainService : Service() {
                                 content = it.readText()
                             }
                         } catch (e: IOException) {
-                            error = e.message
+                            if (e !is FileNotFoundException) {
+                                error = e.message
+                            }
                             if (request.errorStream != null) {
                                 BufferedReader(
                                     InputStreamReader(

@@ -1,5 +1,6 @@
 package com.salmoukas.cerberus.ui
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -20,7 +21,8 @@ class StatusListAdapter :
     ) {
         data class Check(
             val url: String,
-            val results: List<TimeRangeWithCheckStatus>
+            val results: List<TimeRangeWithCheckStatus>,
+            val latest: TimeRangeWithCheckStatus?
         )
     }
 
@@ -43,14 +45,19 @@ class StatusListAdapter :
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (adapterModel != null) {
-            holder.itemView.findViewById<TextView>(R.id.status_item_url_view).text =
-                adapterModel!!.checks[position].url
-            holder.itemView.findViewById<CheckTimelineView>(R.id.status_item_timeline_view)
-                .viewModel =
-                CheckTimelineView.ViewModel(
-                    range = adapterModel!!.range,
-                    results = adapterModel!!.checks[position].results
-                )
+            adapterModel!!.checks[position].let {
+                holder.itemView.findViewById<TextView>(R.id.status_item_url_view).text = it.url
+                holder.itemView.findViewById<TextView>(R.id.status_item_text_view).apply {
+                    text = it.latest?.message ?: "unknown status"
+                    setBackgroundColor(if (it.latest?.ok == true) Color.GREEN else Color.RED)
+                }
+                holder.itemView.findViewById<CheckTimelineView>(R.id.status_item_timeline_view)
+                    .viewModel =
+                    CheckTimelineView.ViewModel(
+                        range = adapterModel!!.range,
+                        results = it.results
+                    )
+            }
         }
     }
 }

@@ -111,10 +111,25 @@ class StatusListFragment : Fragment() {
                             TimeRangeWithCheckStatus(
                                 begin = ourBegin,
                                 end = rit.timestampUtc,
-                                ok = rit.succeeded
+                                ok = rit.succeeded,
+                                message = when {
+                                    rit.error_message != null -> rit.error_message
+                                    rit.status_code_ok == false -> "unexpected status code"
+                                    rit.content_ok == false -> "unexpected content"
+                                    rit.succeeded -> "OK"
+                                    else -> "unknown error"
+                                }
                             )
-                        }
-                )
+                        },
+                    latest = null
+                ).let {
+                    if (it.results.isNotEmpty()) {
+                        it.copy(latest = it.results.last())
+                    }
+                    else {
+                        it
+                    }
+                }
             }
         )
 

@@ -1,4 +1,4 @@
-package com.salmoukas.cerberus.util
+package com.salmoukas.cerberus.ui.model
 
 data class TimeRangeWithCheckStatus (
     val begin: Long,

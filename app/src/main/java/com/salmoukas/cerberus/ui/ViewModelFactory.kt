@@ -1,4 +1,4 @@
-package com.salmoukas.cerberus.ui.main
+package com.salmoukas.cerberus.ui
 
 import android.app.Application
 import android.content.Context

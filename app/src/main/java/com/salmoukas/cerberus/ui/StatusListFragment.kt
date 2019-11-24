@@ -1,4 +1,4 @@
-package com.salmoukas.cerberus.ui.main
+package com.salmoukas.cerberus.ui
 
 import android.os.Bundle
 import android.util.Log
@@ -14,8 +14,8 @@ import com.salmoukas.cerberus.R
 import com.salmoukas.cerberus.ThisApplication
 import com.salmoukas.cerberus.db.CheckConfig
 import com.salmoukas.cerberus.db.CheckResult
-import com.salmoukas.cerberus.util.TimeRange
-import com.salmoukas.cerberus.util.TimeRangeWithCheckStatus
+import com.salmoukas.cerberus.ui.model.TimeRange
+import com.salmoukas.cerberus.ui.model.TimeRangeWithCheckStatus
 import java.util.*
 import kotlin.concurrent.timerTask
 import kotlin.math.max

@@ -1,4 +1,4 @@
-package com.salmoukas.cerberus.ui.main
+package com.salmoukas.cerberus.ui
 
 import android.content.Context
 import android.graphics.Canvas
@@ -6,8 +6,8 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
-import com.salmoukas.cerberus.util.TimeRange
-import com.salmoukas.cerberus.util.TimeRangeWithCheckStatus
+import com.salmoukas.cerberus.ui.model.TimeRange
+import com.salmoukas.cerberus.ui.model.TimeRangeWithCheckStatus
 import kotlin.math.ceil
 import kotlin.math.floor
 import kotlin.math.min
@@ -70,7 +70,8 @@ class CheckTimelineView : View {
     }
 
     private val paintBg = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = COLOR_UNKNOWN
+        color =
+            COLOR_UNKNOWN
     }
 
     override fun onDraw(canvas: Canvas?) {
@@ -83,7 +84,9 @@ class CheckTimelineView : View {
             0f,
             width.toFloat(),
             height.toFloat(),
-            paintBg.apply { color = COLOR_UNKNOWN })
+            paintBg.apply { color =
+                COLOR_UNKNOWN
+            })
 
         val xTransform =
             { x: Long -> width - (x - viewModel!!.range.begin) * width / (viewModel!!.range.end - viewModel!!.range.begin).toFloat() }

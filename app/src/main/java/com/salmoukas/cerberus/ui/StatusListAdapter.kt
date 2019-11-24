@@ -1,4 +1,4 @@
-package com.salmoukas.cerberus.ui.main
+package com.salmoukas.cerberus.ui
 
 import android.view.LayoutInflater
 import android.view.View
@@ -6,8 +6,8 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.salmoukas.cerberus.R
-import com.salmoukas.cerberus.util.TimeRange
-import com.salmoukas.cerberus.util.TimeRangeWithCheckStatus
+import com.salmoukas.cerberus.ui.model.TimeRange
+import com.salmoukas.cerberus.ui.model.TimeRangeWithCheckStatus
 
 class StatusListAdapter :
     RecyclerView.Adapter<StatusListAdapter.ViewHolder>() {

@@ -21,7 +21,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />
 
-            <com.salmoukas.cerberus.ui.main.CheckTimelineView
+            <com.salmoukas.cerberus.ui.CheckTimelineView
                 android:id="@+id/status_item_timeline_view"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content" />

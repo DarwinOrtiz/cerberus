@@ -20,7 +20,7 @@
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
         <fragment
             android:id="@+id/activity_main_content"
-            android:name="com.salmoukas.cerberus.ui.main.StatusListFragment"
+            android:name="com.salmoukas.cerberus.ui.StatusListFragment"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
     </FrameLayout>

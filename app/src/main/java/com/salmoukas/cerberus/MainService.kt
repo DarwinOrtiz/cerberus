@@ -17,6 +17,7 @@ import java.net.URL
 import java.nio.charset.StandardCharsets
 import java.util.concurrent.Callable
 import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 class MainService : Service() {
 
@@ -188,7 +189,8 @@ class MainService : Service() {
         val db = (application as ThisApplication).db!!
 
         val checkConfigs = db.checkConfigDao().targets()
-        val checkResults = db.checkResultDao().period(Constants.CHECK_STATUS_PERIOD_SECONDS)
+        val checkResults = db.checkResultDao()
+            .latestPeriod(TimeUnit.MINUTES.toSeconds(Constants.CHECK_STATUS_LATEST_PERIOD_MINUTES.toLong()))
 
         var failedChecks = 0
         var staleChecks = 0
@@ -202,7 +204,10 @@ class MainService : Service() {
                     if (it != null && !it.succeeded) {
                         failedChecks += 1
                     }
-                    if (it == null || (now - it.timestampUtc) >= Constants.CHECK_STATUS_STALE_AFTER_SECONDS) {
+                    if (it == null || (now - it.timestampUtc) >= TimeUnit.MINUTES.toSeconds(
+                            Constants.CHECK_STATUS_STALE_AFTER_MINUTES.toLong()
+                        )
+                    ) {
                         staleChecks += 1
                     }
                 }
@@ -215,7 +220,10 @@ class MainService : Service() {
             )
 
         if (failedChecks > 0) {
-            if (lastErrorNotification == null || (lastErrorNotification!! - System.currentTimeMillis()) > Constants.MONITORING_ERROR_NOTIFICATION_NOREPEAT_MILLISECONDS) {
+            if (lastErrorNotification == null || (lastErrorNotification!! - System.currentTimeMillis()) > TimeUnit.MINUTES.toMillis(
+                    Constants.MONITORING_ERROR_NOTIFICATION_NOREPEAT_MINUTES.toLong()
+                )
+            ) {
                 (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
                     .notify(
                         Constants.MONITORING_ERROR_NOTIFICATION_ID,

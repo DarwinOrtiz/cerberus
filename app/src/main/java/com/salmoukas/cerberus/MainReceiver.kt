@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.SystemClock
 import android.util.Log
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 class MainReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context?, intent: Intent?) {
@@ -29,8 +30,8 @@ class MainReceiver : BroadcastReceiver() {
             Log.d("MAIN_RECEIVER", "install keep alive")
             (context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager).setInexactRepeating(
                 AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + Constants.KEEP_ALIVE_INTERVAL_MILLISECONDS,
-                Constants.KEEP_ALIVE_INTERVAL_MILLISECONDS,
+                SystemClock.elapsedRealtime() + TimeUnit.MINUTES.toMillis(Constants.KEEP_ALIVE_INTERVAL_MINUTES.toLong()),
+                TimeUnit.MINUTES.toMillis(Constants.KEEP_ALIVE_INTERVAL_MINUTES.toLong()),
                 PendingIntent.getBroadcast(
                     context.applicationContext,
                     0,

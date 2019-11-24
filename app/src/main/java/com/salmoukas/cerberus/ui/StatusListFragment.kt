@@ -17,6 +17,7 @@ import com.salmoukas.cerberus.db.CheckResult
 import com.salmoukas.cerberus.ui.model.TimeRange
 import com.salmoukas.cerberus.ui.model.TimeRangeWithCheckStatus
 import java.util.*
+import java.util.concurrent.TimeUnit
 import kotlin.concurrent.timerTask
 import kotlin.math.max
 
@@ -54,7 +55,8 @@ class StatusListFragment : Fragment() {
                     refreshListAdapterModel()
                 })
 
-        db.checkResultDao().periodLive(Constants.CHECK_STATUS_PERIOD_SECONDS)
+        db.checkResultDao()
+            .latestPeriodLive(TimeUnit.MINUTES.toSeconds(Constants.CHECK_STATUS_LATEST_PERIOD_MINUTES.toLong()))
             .observe(
                 viewLifecycleOwner,
                 Observer<List<CheckResult>> { records ->
@@ -77,8 +79,8 @@ class StatusListFragment : Fragment() {
                     refreshListAdapterModel()
                 }
             },
-            Constants.CHECK_STATUS_REFRESH_INTERVAL_MILLISECONDS,
-            Constants.CHECK_STATUS_REFRESH_INTERVAL_MILLISECONDS
+            TimeUnit.MINUTES.toMillis(Constants.CHECK_STATUS_REFRESH_INTERVAL_MINUTES.toLong()),
+            TimeUnit.MINUTES.toMillis(Constants.CHECK_STATUS_REFRESH_INTERVAL_MINUTES.toLong())
         )
     }
 
@@ -95,7 +97,10 @@ class StatusListFragment : Fragment() {
     private fun refreshListAdapterModel() {
         val now = System.currentTimeMillis() / 1000L
         listAdapter.adapterModel = StatusListAdapter.AdapterModel(
-            range = TimeRange(now - Constants.CHECK_STATUS_PERIOD_SECONDS, now),
+            range = TimeRange(
+                now - TimeUnit.MINUTES.toSeconds(Constants.CHECK_STATUS_LATEST_PERIOD_MINUTES.toLong()),
+                now
+            ),
             checks = checkConfigs.map { cit ->
                 var nextBegin: Long? = null
                 StatusListAdapter.AdapterModel.Check(
@@ -131,7 +136,10 @@ class StatusListFragment : Fragment() {
                         it
                     }
                 }.let {
-                    if (it.latest != null && (now - it.latest.end) < Constants.CHECK_STATUS_STALE_AFTER_SECONDS) {
+                    if (it.latest != null && (now - it.latest.end) < TimeUnit.MINUTES.toSeconds(
+                            Constants.CHECK_STATUS_STALE_AFTER_MINUTES.toLong()
+                        )
+                    ) {
                         it.copy(stale = false)
                     } else {
                         it

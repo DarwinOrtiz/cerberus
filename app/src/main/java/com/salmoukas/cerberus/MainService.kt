@@ -26,7 +26,7 @@ class MainService : Service() {
 
         // create notification channel
         NotificationChannel(
-            Constants.NOTIFICATION_CHANNEL_MONITORING_STATE,
+            Constants.MONITORING_NOTIFICATION_CHANNEL,
             resources.getString(R.string.app_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
@@ -37,7 +37,7 @@ class MainService : Service() {
         }
 
         // create notification and post service to foreground
-        Notification.Builder(this, Constants.NOTIFICATION_CHANNEL_MONITORING_STATE)
+        Notification.Builder(this, Constants.MONITORING_NOTIFICATION_CHANNEL)
             .setContentTitle(resources.getString(R.string.app_name))
             .setContentText(resources.getString(R.string.monitoring_active))
             .setStyle(Notification.BigTextStyle().bigText(resources.getString(R.string.monitoring_active)))
@@ -48,7 +48,7 @@ class MainService : Service() {
             .setOngoing(true)
             .build()
             .apply {
-                startForeground(Constants.NOTIFICATION_ID_MONITORING_STATE, this)
+                startForeground(Constants.MONITORING_NOTIFICATION_ID, this)
             }
     }
 
@@ -59,7 +59,7 @@ class MainService : Service() {
             val wl = (getSystemService(Context.POWER_SERVICE) as PowerManager)
                 .newWakeLock(
                     PowerManager.PARTIAL_WAKE_LOCK,
-                    Constants.WAKE_LOCK_MAIN_SERVICE
+                    "cerberus:checkcycleworker"
                 )
                 .apply {
                     acquire(120 * 1000)
@@ -159,7 +159,7 @@ class MainService : Service() {
             }.map {
                 if (!checks.getValue(it.configUid).isReference) {
                     it.copy(
-                        skip = (referenceSucceeded / referenceTotal.toDouble()) < Constants.CHECK_CYCLE_REQUIRED_REFERENCE_SUCCESS
+                        skip = (referenceSucceeded / referenceTotal.toDouble()) < Constants.CHECK_CYCLE_REFERENCE_SUCCESS_RATIO
                     )
                 } else {
                     it
@@ -202,7 +202,7 @@ class MainService : Service() {
             (context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager)
                 .newWakeLock(
                     PowerManager.PARTIAL_WAKE_LOCK,
-                    Constants.WAKE_LOCK_MAIN_SERVICE
+                    "cerberus:startmainservice"
                 )
                 .acquire(6 * 1000)
 

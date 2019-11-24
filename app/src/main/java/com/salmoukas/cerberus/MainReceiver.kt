@@ -14,7 +14,7 @@ class MainReceiver : BroadcastReceiver() {
         Log.d("MAIN_RECEIVER", "action received = " + intent?.action)
         if (context != null) {
             // perform check cycle if requested
-            if (intent?.action == Constants.INTENT_CHECK_CYCLE) {
+            if (intent?.action == Constants.CHECK_CYCLE_ACTION) {
                 MainService.ctlRunCheckCycle(context)
             }
             // start main service (if not started)
@@ -29,15 +29,15 @@ class MainReceiver : BroadcastReceiver() {
             Log.d("MAIN_RECEIVER", "install keep alive")
             (context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager).setInexactRepeating(
                 AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + Constants.INTERVAL_KEEP_ALIVE,
-                Constants.INTERVAL_KEEP_ALIVE,
+                SystemClock.elapsedRealtime() + Constants.KEEP_ALIVE_INTERVAL,
+                Constants.KEEP_ALIVE_INTERVAL,
                 PendingIntent.getBroadcast(
                     context.applicationContext,
                     0,
                     Intent(
                         context.applicationContext,
                         MainReceiver::class.java
-                    ).setAction(Constants.INTENT_KEEP_ALIVE),
+                    ).setAction(Constants.KEEP_ALIVE_ACTION),
                     0
                 )
             )
@@ -50,7 +50,7 @@ class MainReceiver : BroadcastReceiver() {
                     timeInMillis = System.currentTimeMillis()
                     set(
                         Calendar.MINUTE,
-                        get(Calendar.MINUTE) - (get(Calendar.MINUTE) % Constants.INTERVAL_CHECK_CYCLE_MINUTES) + Constants.INTERVAL_CHECK_CYCLE_MINUTES
+                        get(Calendar.MINUTE) - (get(Calendar.MINUTE) % Constants.CHECK_CYCLE_INTERVAL_MINUTES) + Constants.CHECK_CYCLE_INTERVAL_MINUTES
                     )
                     set(Calendar.SECOND, 0)
                     set(Calendar.MILLISECOND, 0)
@@ -72,7 +72,7 @@ class MainReceiver : BroadcastReceiver() {
                     Intent(
                         context.applicationContext,
                         MainReceiver::class.java
-                    ).setAction(Constants.INTENT_CHECK_CYCLE),
+                    ).setAction(Constants.CHECK_CYCLE_ACTION),
                     0
                 )
             )
@@ -87,7 +87,7 @@ class MainReceiver : BroadcastReceiver() {
                     Intent(
                         context.applicationContext,
                         MainReceiver::class.java
-                    ).setAction(Constants.INTENT_CHECK_CYCLE),
+                    ).setAction(Constants.CHECK_CYCLE_ACTION),
                     0
                 )
             )

@@ -104,8 +104,8 @@ class StatusListFragment : Fragment() {
                         .sortedBy { rit -> rit.timestampUtc }
                         .map { rit ->
                             val ourBegin = max(
-                                nextBegin ?: rit.timestampUtc - 1 * 60 * Constants.INTERVAL_CHECK_CYCLE_MINUTES,
-                                rit.timestampUtc - 2 * 60 * Constants.INTERVAL_CHECK_CYCLE_MINUTES
+                                nextBegin ?: rit.timestampUtc - Constants.CHECK_CYCLE_INTERVAL_MINUTES * 60,
+                                rit.timestampUtc - Constants.CHECK_SAMPLE_MAX_VALIDITY_MINUTES * 60
                             )
                             nextBegin = rit.timestampUtc
                             TimeRangeWithCheckStatus(

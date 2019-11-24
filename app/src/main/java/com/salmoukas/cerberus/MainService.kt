@@ -252,10 +252,10 @@ class MainService : Service() {
         val text = buildNotificationText(failedChecks, staleChecks)
 
         val icon = when {
-            (failedChecks == null || staleChecks == null) -> R.drawable.ic_launcher_foreground
-            (failedChecks == 0 && staleChecks == 0) -> R.drawable.ic_launcher_foreground
-            (failedChecks == 0 && staleChecks > 0) -> R.drawable.ic_launcher_foreground
-            else -> R.drawable.ic_launcher_foreground
+            (failedChecks == null || staleChecks == null) -> R.drawable.ic_broadcast_tower_light
+            (failedChecks == 0 && staleChecks == 0) -> R.drawable.ic_thumbs_up_light
+            (failedChecks == 0 && staleChecks > 0) -> R.drawable.ic_engine_warning_light
+            else -> R.drawable.ic_bomb_light
         }
 
         return Notification.Builder(this, Constants.MONITORING_PRIMARY_NOTIFICATION_CHANNEL)
@@ -280,7 +280,7 @@ class MainService : Service() {
             .setContentTitle(resources.getString(R.string.app_name))
             .setContentText(text)
             .setStyle(Notification.BigTextStyle().bigText(text))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_bomb_light)
             .setColor(Color.RED)
             .setColorized(true)
             .setWhen(System.currentTimeMillis())

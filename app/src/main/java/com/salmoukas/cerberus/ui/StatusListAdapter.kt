@@ -48,7 +48,15 @@ class StatusListAdapter :
             adapterModel!!.checks[position].let {
                 holder.itemView.findViewById<TextView>(R.id.status_item_url_view).text = it.url
                 holder.itemView.findViewById<TextView>(R.id.status_item_text_view).apply {
-                    text = it.latest?.message ?: "unknown status"
+                    val now = System.currentTimeMillis() / 1000L
+                    val ago = if (it.latest != null) now - it.latest.end else null
+                    val agoStr =
+                        if (ago != null) (
+                                if (ago >= (60 * 60)) (ago / (60 * 60)).toString() + " hours"
+                                else (ago / 60).toString() + " minutes")
+                        else null
+                    text = (if (agoStr != null) "$agoStr ago: " else "") +
+                            (it.latest?.message ?: "unknown status")
                     setBackgroundColor(if (it.latest?.ok == true) Color.GREEN else Color.RED)
                 }
                 holder.itemView.findViewById<CheckTimelineView>(R.id.status_item_timeline_view)

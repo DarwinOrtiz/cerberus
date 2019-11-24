@@ -263,7 +263,7 @@ class MainService : Service() {
             (failedChecks == null || staleChecks == null) -> R.drawable.ic_broadcast_tower_light
             (failedChecks == 0 && staleChecks == 0) -> R.drawable.ic_thumbs_up_light
             (failedChecks == 0 && staleChecks > 0) -> R.drawable.ic_engine_warning_light
-            else -> R.drawable.ic_bomb_light
+            else -> R.drawable.ic_dog_solid
         }
 
         return Notification.Builder(this, Constants.MONITORING_PRIMARY_NOTIFICATION_CHANNEL)

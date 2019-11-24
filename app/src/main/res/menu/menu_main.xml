@@ -1,6 +1,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/menu_main_action_check_now"
+        android:orderInCategory="100"
+        android:title="@string/menu_main_action_check_now"
+        android:icon="@drawable/ic_redo_light"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/menu_main_action_settings"
         android:orderInCategory="100"
         android:title="@string/menu_main_action_settings"

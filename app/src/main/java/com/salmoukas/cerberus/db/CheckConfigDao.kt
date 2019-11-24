@@ -9,6 +9,9 @@ interface CheckConfigDao {
     fun all(): List<CheckConfig>
 
     @Query("SELECT * FROM check_config WHERE is_reference = 0")
+    fun targets(): List<CheckConfig>
+
+    @Query("SELECT * FROM check_config WHERE is_reference = 0")
     fun targetsLive(): LiveData<List<CheckConfig>>
 
     @Insert

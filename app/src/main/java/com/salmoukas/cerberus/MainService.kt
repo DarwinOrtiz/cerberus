@@ -3,6 +3,7 @@ package com.salmoukas.cerberus
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
@@ -22,12 +23,15 @@ class MainService : Service() {
     @Volatile
     private var worker: Thread? = null
 
+    @Volatile
+    private var lastErrorNotification: Long? = null
+
     override fun onCreate() {
         super.onCreate()
 
-        // create notification channel
+        // create notification channels
         NotificationChannel(
-            Constants.MONITORING_NOTIFICATION_CHANNEL,
+            Constants.MONITORING_PRIMARY_NOTIFICATION_CHANNEL,
             resources.getString(R.string.app_name),
             NotificationManager.IMPORTANCE_LOW
         ).apply {
@@ -37,20 +41,22 @@ class MainService : Service() {
                 .createNotificationChannel(this)
         }
 
+        NotificationChannel(
+            Constants.MONITORING_ERROR_NOTIFICATION_CHANNEL,
+            resources.getString(R.string.app_name),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            enableVibration(true)
+            enableLights(true)
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                .createNotificationChannel(this)
+        }
+
         // create notification and post service to foreground
-        Notification.Builder(this, Constants.MONITORING_NOTIFICATION_CHANNEL)
-            .setContentTitle(resources.getString(R.string.app_name))
-            .setContentText(resources.getString(R.string.monitoring_active))
-            .setStyle(Notification.BigTextStyle().bigText(resources.getString(R.string.monitoring_active)))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setContentIntent(
-                PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), 0)
-            )
-            .setOngoing(true)
-            .build()
-            .apply {
-                startForeground(Constants.MONITORING_NOTIFICATION_ID, this)
-            }
+        startForeground(
+            Constants.MONITORING_PRIMARY_NOTIFICATION_ID,
+            buildPrimaryNotification(null)
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -70,6 +76,7 @@ class MainService : Service() {
             worker = Thread {
                 try {
                     checkCycleWork()
+                    deriveNotificationStatus()
                 } finally {
                     MainReceiver.ctlScheduleCheckCycle(this)
                     wl.release()
@@ -175,6 +182,94 @@ class MainService : Service() {
         } finally {
             threadPool.shutdown()
         }
+    }
+
+    private fun deriveNotificationStatus() {
+        val db = (application as ThisApplication).db!!
+
+        val checkConfigs = db.checkConfigDao().targets()
+        val checkResults = db.checkResultDao().window(Constants.CHECK_STATUS_WINDOW_SECONDS)
+
+        var failedChecks = 0
+
+        checkConfigs.onEach { cit ->
+            checkResults.filter { rit -> cit.uid == rit.configUid && !rit.skip }
+                .maxBy { it.timestampUtc }
+                .let {
+                    if (it != null && !it.succeeded) {
+                        failedChecks += 1
+                    }
+                }
+        }
+
+        (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+            .notify(
+                Constants.MONITORING_PRIMARY_NOTIFICATION_ID,
+                buildPrimaryNotification(failedChecks)
+            )
+
+        if (failedChecks > 0) {
+            if (lastErrorNotification == null || (lastErrorNotification!! - System.currentTimeMillis()) > Constants.MONITORING_ERROR_NOTIFICATION_NOREPEAT_MILLISECONDS) {
+                (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                    .notify(
+                        Constants.MONITORING_ERROR_NOTIFICATION_ID,
+                        buildErrorNotification(failedChecks)
+                    )
+                lastErrorNotification = System.currentTimeMillis()
+            }
+        } else {
+            (getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager)
+                .cancel(Constants.MONITORING_ERROR_NOTIFICATION_ID)
+            lastErrorNotification = null
+        }
+    }
+
+    private fun buildPrimaryNotification(failedChecks: Int?): Notification {
+
+        val text = when (failedChecks) {
+            null -> resources.getString(R.string.notification_init)
+            0 -> resources.getString(R.string.notification_ok)
+            else -> resources.getString(R.string.notification_error, failedChecks)
+        }
+
+        val icon = when (failedChecks) {
+            null -> R.drawable.ic_launcher_foreground
+            0 -> R.drawable.ic_launcher_foreground
+            else -> R.drawable.ic_launcher_foreground
+        }
+
+        return Notification.Builder(this, Constants.MONITORING_PRIMARY_NOTIFICATION_CHANNEL)
+            .setContentTitle(resources.getString(R.string.app_name))
+            .setContentText(text)
+            .setStyle(Notification.BigTextStyle().bigText(text))
+            .setSmallIcon(icon)
+            .setContentIntent(
+                PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), 0)
+            )
+            .setOngoing(true)
+            .build()
+    }
+
+    private fun buildErrorNotification(failedChecks: Int): Notification {
+
+        return Notification.Builder(this, Constants.MONITORING_ERROR_NOTIFICATION_CHANNEL)
+            .setContentTitle(resources.getString(R.string.app_name))
+            .setContentText(resources.getString(R.string.notification_error, failedChecks))
+            .setStyle(
+                Notification.BigTextStyle().bigText(
+                    resources.getString(
+                        R.string.notification_error,
+                        failedChecks
+                    )
+                )
+            )
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setColor(Color.RED)
+            .setColorized(true)
+            .setContentIntent(
+                PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), 0)
+            )
+            .build()
     }
 
     override fun onDestroy() {

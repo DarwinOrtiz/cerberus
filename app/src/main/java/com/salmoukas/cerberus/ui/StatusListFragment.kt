@@ -54,7 +54,7 @@ class StatusListFragment : Fragment() {
                     refreshListAdapterModel()
                 })
 
-        db.checkResultDao().latestLive(Constants.CHECK_STATUS_WINDOW_SECONDS)
+        db.checkResultDao().windowLive(Constants.CHECK_STATUS_WINDOW_SECONDS)
             .observe(
                 viewLifecycleOwner,
                 Observer<List<CheckResult>> { records ->

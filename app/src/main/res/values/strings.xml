@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">Cerberus</string>
-    <string name="monitoring_active">Active Monitoring</string>
+    <string name="notification_init">Initializing…</string>
+    <string name="notification_ok">All checks OK</string>
+    <string name="notification_error">%1$d checks FAILED!</string>
     <string name="menu_main_action_settings">Settings</string>
 </resources>

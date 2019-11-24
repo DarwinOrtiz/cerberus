@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">Cerberus</string>
     <string name="monitoring_active">Active Monitoring</string>
+    <string name="menu_main_action_settings">Settings</string>
 </resources>

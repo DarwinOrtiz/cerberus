@@ -17,13 +17,13 @@ class Constants {
 
         // check cycle
         const val CHECK_CYCLE_ACTION = "com.salmoukas.cerberus.CHECK_CYCLE"
-        const val CHECK_CYCLE_INTERVAL_MINUTES = 1
+        const val CHECK_CYCLE_INTERVAL_MINUTES = 10
         const val CHECK_CYCLE_REFERENCE_SUCCESS_RATIO: Double = 2 / 3.toDouble()
 
         // check status
         const val CHECK_STATUS_RETROGRADE_VALIDITY_MINUTES = CHECK_CYCLE_INTERVAL_MINUTES + 5
         const val CHECK_STATUS_REFRESH_INTERVAL_MILLISECONDS: Long = 1000 * 60
         const val CHECK_STATUS_PERIOD_SECONDS: Long = 60 * 60 * 24
-        const val CHECK_STATUS_STALE_AFTER_SECONDS: Long = 2 * 60
+        const val CHECK_STATUS_STALE_AFTER_SECONDS: Long = CHECK_CYCLE_INTERVAL_MINUTES * 3 * 60L
     }
 }

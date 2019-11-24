@@ -5,10 +5,11 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
-import android.util.Log
 import android.view.View
 import com.salmoukas.cerberus.util.TimeRange
 import com.salmoukas.cerberus.util.TimeRangeWithCheckStatus
+import kotlin.math.ceil
+import kotlin.math.floor
 import kotlin.math.min
 
 
@@ -85,17 +86,13 @@ class CheckTimelineView : View {
             paintBg.apply { color = COLOR_UNKNOWN })
 
         val xTransform =
-            { x: Long -> (x - viewModel!!.range.begin) * width / (viewModel!!.range.end - viewModel!!.range.begin).toFloat() }
+            { x: Long -> width - (x - viewModel!!.range.begin) * width / (viewModel!!.range.end - viewModel!!.range.begin).toFloat() }
 
         viewModel!!.results.onEach {
-            Log.d(
-                "DRAW",
-                "begin=" + xTransform(it.begin).toString() + ", end=" + xTransform(it.end).toString()
-            )
             canvas.drawRect(
-                xTransform(it.begin),
+                floor(xTransform(it.end)),
                 0f,
-                xTransform(it.end),
+                ceil(xTransform(it.begin)),
                 height.toFloat(),
                 paintBg.apply { color = if (it.ok) COLOR_OK else COLOR_ERROR }
             )

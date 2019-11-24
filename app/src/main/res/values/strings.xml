@@ -8,5 +8,9 @@
     <string name="notification_error_failed_stale">%1$d checks FAILED and %2$d checks STALE!</string>
     <string name="status_list_minutes_ago">%1$d minutes ago: %2$s</string>
     <string name="status_list_hours_ago">%1$d minutes ago: %2$s</string>
-    <string name="status_list_unknown">unknown status</string>
+    <string name="status_list_status_unknown">unknown status</string>
+    <string name="status_list_status_unexpected_status_code">unexpected status code</string>
+    <string name="status_list_status_unexpected_content">unexpected content</string>
+    <string name="status_list_status_ok">OK</string>
+    <string name="status_list_status_unknown_error">unknown error</string>
 </resources>

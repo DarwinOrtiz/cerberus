@@ -9,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.salmoukas.cerberus.R
 import com.salmoukas.cerberus.ui.model.TimeRange
 import com.salmoukas.cerberus.ui.model.TimeRangeWithCheckStatus
+import java.util.concurrent.TimeUnit
 
 class StatusListAdapter :
     RecyclerView.Adapter<StatusListAdapter.ViewHolder>() {
@@ -49,8 +50,9 @@ class StatusListAdapter :
             adapterModel!!.checks[position].let {
                 holder.itemView.findViewById<TextView>(R.id.status_item_url_view).text = it.url
                 holder.itemView.findViewById<TextView>(R.id.status_item_text_view).apply {
-                    val now = System.currentTimeMillis() / 1000L
-                    val message = it.latest?.message ?: "unknown status"
+                    val now = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
+                    val message = it.latest?.message
+                        ?: resources.getString(R.string.status_list_status_unknown)
                     text = when {
                         it.latest != null -> now - it.latest.end
                         else -> null

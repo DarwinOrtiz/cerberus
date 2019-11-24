@@ -95,7 +95,7 @@ class StatusListFragment : Fragment() {
     }
 
     private fun refreshListAdapterModel() {
-        val now = System.currentTimeMillis() / 1000L
+        val now = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
         listAdapter.adapterModel = StatusListAdapter.AdapterModel(
             range = TimeRange(
                 now - TimeUnit.MINUTES.toSeconds(Constants.CHECK_STATUS_LATEST_PERIOD_MINUTES.toLong()),
@@ -120,10 +120,10 @@ class StatusListFragment : Fragment() {
                                 ok = rit.succeeded,
                                 message = when {
                                     rit.error_message != null -> rit.error_message
-                                    rit.status_code_ok == false -> "unexpected status code"
-                                    rit.content_ok == false -> "unexpected content"
-                                    rit.succeeded -> "OK"
-                                    else -> "unknown error"
+                                    rit.status_code_ok == false -> getString(R.string.status_list_status_unexpected_status_code)
+                                    rit.content_ok == false -> getString(R.string.status_list_status_unexpected_content)
+                                    rit.succeeded -> getString(R.string.status_list_status_ok)
+                                    else -> getString(R.string.status_list_status_unknown_error)
                                 }
                             )
                         },

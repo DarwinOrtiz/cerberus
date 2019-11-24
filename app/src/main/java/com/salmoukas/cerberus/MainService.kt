@@ -98,7 +98,7 @@ class MainService : Service() {
 
         val db = (application as ThisApplication).db!!
 
-        val timestamp = System.currentTimeMillis() / 1000L
+        val timestamp = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
         val checks = db.checkConfigDao().all().map { it.uid to it }.toMap()
 
         var referenceTotal = 0
@@ -195,7 +195,7 @@ class MainService : Service() {
         var failedChecks = 0
         var staleChecks = 0
 
-        val now = System.currentTimeMillis() / 1000L
+        val now = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
 
         checkConfigs.onEach { cit ->
             checkResults.filter { rit -> cit.uid == rit.configUid && !rit.skip }

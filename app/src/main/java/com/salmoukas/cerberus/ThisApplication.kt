@@ -69,7 +69,7 @@ class ThisApplication : Application() {
         }
 
         // start main service (if not started)
-        MainService.ctlStartService(this)
+        MainService.ctlRunCheckCycle(this)
 
         // install keep alive timer
         MainReceiver.ctlInstallKeepAlive(this)

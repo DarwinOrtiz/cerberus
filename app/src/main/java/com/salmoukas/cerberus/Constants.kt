@@ -17,7 +17,7 @@ class Constants {
 
         // check cycle
         const val CHECK_CYCLE_ACTION = "com.salmoukas.cerberus.CHECK_CYCLE"
-        const val CHECK_CYCLE_INTERVAL_MINUTES = 10
+        const val CHECK_CYCLE_INTERVAL_MINUTES = 5
         const val CHECK_CYCLE_REFERENCE_SUCCESS_RATIO: Double = 2 / 3.toDouble()
 
         // check status

@@ -29,8 +29,8 @@ class MainReceiver : BroadcastReceiver() {
             Log.d("MAIN_RECEIVER", "install keep alive")
             (context.applicationContext.getSystemService(Context.ALARM_SERVICE) as AlarmManager).setInexactRepeating(
                 AlarmManager.ELAPSED_REALTIME_WAKEUP,
-                SystemClock.elapsedRealtime() + Constants.KEEP_ALIVE_INTERVAL,
-                Constants.KEEP_ALIVE_INTERVAL,
+                SystemClock.elapsedRealtime() + Constants.KEEP_ALIVE_INTERVAL_MILLISECONDS,
+                Constants.KEEP_ALIVE_INTERVAL_MILLISECONDS,
                 PendingIntent.getBroadcast(
                     context.applicationContext,
                     0,

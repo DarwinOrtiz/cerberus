@@ -54,7 +54,7 @@ class StatusListFragment : Fragment() {
                     refreshListAdapterModel()
                 })
 
-        db.checkResultDao().latestLive(60 * 60 * 24)
+        db.checkResultDao().latestLive(Constants.CHECK_STATUS_WINDOW_SECONDS)
             .observe(
                 viewLifecycleOwner,
                 Observer<List<CheckResult>> { records ->
@@ -77,8 +77,8 @@ class StatusListFragment : Fragment() {
                     refreshListAdapterModel()
                 }
             },
-            1000 * 60,
-            1000 * 60
+            Constants.CHECK_STATUS_REFRESH_INTERVAL_MILLISECONDS,
+            Constants.CHECK_STATUS_REFRESH_INTERVAL_MILLISECONDS
         )
     }
 
@@ -95,7 +95,7 @@ class StatusListFragment : Fragment() {
     private fun refreshListAdapterModel() {
         val now = System.currentTimeMillis() / 1000L
         listAdapter.adapterModel = StatusListAdapter.AdapterModel(
-            range = TimeRange(now - 60 * 60 * 24, now),
+            range = TimeRange(now - Constants.CHECK_STATUS_WINDOW_SECONDS, now),
             checks = checkConfigs.map { cit ->
                 var nextBegin: Long? = null
                 StatusListAdapter.AdapterModel.Check(

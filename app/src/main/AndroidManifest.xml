@@ -17,11 +17,8 @@
         android:theme="@style/AppTheme">
 
         <service android:name=".MainService" />
-        <service
-            android:name=".CheckCycleJob"
-            android:permission="android.permission.BIND_JOB_SERVICE" />
 
-        <receiver android:name=".KeepAliveReceiver">
+        <receiver android:name=".MainReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <action android:name="android.intent.action.LOCKED_BOOT_COMPLETED" />
@@ -29,6 +26,7 @@
                 <action android:name="com.htc.intent.action.QUICKBOOT_POWERON" />
                 <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
                 <action android:name="com.salmoukas.cerberus.KEEP_ALIVE" />
+                <action android:name="com.salmoukas.cerberus.CHECK_CYCLE" />
             </intent-filter>
         </receiver>
 

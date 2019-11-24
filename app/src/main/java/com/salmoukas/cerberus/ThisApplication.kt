@@ -1,11 +1,6 @@
 package com.salmoukas.cerberus
 
-import android.app.AlarmManager
 import android.app.Application
-import android.app.PendingIntent
-import android.content.Context
-import android.content.Intent
-import android.os.SystemClock
 import androidx.room.Room
 import com.salmoukas.cerberus.db.CheckConfig
 import com.salmoukas.cerberus.db.MainDatabase
@@ -74,14 +69,9 @@ class ThisApplication : Application() {
         }
 
         // start main service (if not started)
-        startForegroundService(Intent(this, MainService::class.java))
+        MainService.ctlStartService(this)
 
-        // install keep alive broadcast
-        (getSystemService(Context.ALARM_SERVICE) as AlarmManager).setInexactRepeating(
-            AlarmManager.ELAPSED_REALTIME_WAKEUP,
-            SystemClock.elapsedRealtime() + Constants.INTERVAL_KEEP_ALIVE,
-            Constants.INTERVAL_KEEP_ALIVE,
-            PendingIntent.getBroadcast(this, 0, Intent(Constants.INTENT_KEEP_ALIVE), 0)
-        )
+        // install keep alive timer
+        MainReceiver.ctlInstallKeepAlive(this)
     }
 }

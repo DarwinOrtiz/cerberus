@@ -101,51 +101,53 @@ class StatusListFragment : Fragment() {
                 now - TimeUnit.MINUTES.toSeconds(Constants.CHECK_STATUS_LATEST_PERIOD_MINUTES.toLong()),
                 now
             ),
-            checks = checkConfigs.map { cit ->
-                var nextBegin: Long? = null
-                StatusListAdapter.AdapterModel.Check(
-                    url = cit.url,
-                    results = checkResults.filter { rit -> rit.configUid == cit.uid && !rit.skip }
-                        .sortedBy { rit -> rit.timestampUtc }
-                        .map { rit ->
-                            val ourBegin = max(
-                                nextBegin ?: rit.timestampUtc
-                                - Constants.CHECK_CYCLE_INTERVAL_MINUTES * 60,
-                                rit.timestampUtc - Constants.CHECK_STATUS_RETROGRADE_VALIDITY_MINUTES * 60
+            checks = checkConfigs
+                .sortedBy { it.url }
+                .map { cit ->
+                    var nextBegin: Long? = null
+                    StatusListAdapter.AdapterModel.Check(
+                        url = cit.url,
+                        results = checkResults.filter { rit -> rit.configUid == cit.uid && !rit.skip }
+                            .sortedBy { rit -> rit.timestampUtc }
+                            .map { rit ->
+                                val ourBegin = max(
+                                    nextBegin ?: rit.timestampUtc
+                                    - Constants.CHECK_CYCLE_INTERVAL_MINUTES * 60,
+                                    rit.timestampUtc - Constants.CHECK_STATUS_RETROGRADE_VALIDITY_MINUTES * 60
+                                )
+                                nextBegin = rit.timestampUtc
+                                TimeRangeWithCheckStatus(
+                                    begin = ourBegin,
+                                    end = rit.timestampUtc,
+                                    ok = rit.succeeded,
+                                    message = when {
+                                        rit.error_message != null -> rit.error_message
+                                        rit.status_code_ok == false -> getString(R.string.status_list_status_unexpected_status_code)
+                                        rit.content_ok == false -> getString(R.string.status_list_status_unexpected_content)
+                                        rit.succeeded -> getString(R.string.status_list_status_ok)
+                                        else -> getString(R.string.status_list_status_unknown_error)
+                                    }
+                                )
+                            },
+                        latest = null,
+                        stale = true
+                    ).let {
+                        if (it.results.isNotEmpty()) {
+                            it.copy(latest = it.results.last())
+                        } else {
+                            it
+                        }
+                    }.let {
+                        if (it.latest != null && (now - it.latest.end) < TimeUnit.MINUTES.toSeconds(
+                                Constants.CHECK_STATUS_STALE_AFTER_MINUTES.toLong()
                             )
-                            nextBegin = rit.timestampUtc
-                            TimeRangeWithCheckStatus(
-                                begin = ourBegin,
-                                end = rit.timestampUtc,
-                                ok = rit.succeeded,
-                                message = when {
-                                    rit.error_message != null -> rit.error_message
-                                    rit.status_code_ok == false -> getString(R.string.status_list_status_unexpected_status_code)
-                                    rit.content_ok == false -> getString(R.string.status_list_status_unexpected_content)
-                                    rit.succeeded -> getString(R.string.status_list_status_ok)
-                                    else -> getString(R.string.status_list_status_unknown_error)
-                                }
-                            )
-                        },
-                    latest = null,
-                    stale = true
-                ).let {
-                    if (it.results.isNotEmpty()) {
-                        it.copy(latest = it.results.last())
-                    } else {
-                        it
-                    }
-                }.let {
-                    if (it.latest != null && (now - it.latest.end) < TimeUnit.MINUTES.toSeconds(
-                            Constants.CHECK_STATUS_STALE_AFTER_MINUTES.toLong()
-                        )
-                    ) {
-                        it.copy(stale = false)
-                    } else {
-                        it
+                        ) {
+                            it.copy(stale = false)
+                        } else {
+                            it
+                        }
                     }
                 }
-            }
         )
 
     }

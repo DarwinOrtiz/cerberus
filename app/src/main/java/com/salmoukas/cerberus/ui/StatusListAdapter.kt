@@ -1,10 +1,13 @@
 package com.salmoukas.cerberus.ui
 
+import android.content.Intent
 import android.graphics.drawable.GradientDrawable
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat.startActivity
 import androidx.recyclerview.widget.RecyclerView
 import com.salmoukas.cerberus.R
 import com.salmoukas.cerberus.ui.model.TimeRange
@@ -48,7 +51,12 @@ class StatusListAdapter :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (adapterModel != null) {
             adapterModel!!.checks[position].let {
-                holder.itemView.findViewById<TextView>(R.id.status_item_url).text = it.url
+                holder.itemView.findViewById<TextView>(R.id.status_item_url).apply {
+                    text = it.url
+                    setOnClickListener { _ ->
+                        startActivity(context, Intent(Intent.ACTION_VIEW, Uri.parse(it.url)), null)
+                    }
+                }
                 holder.itemView.findViewById<TextView>(R.id.status_item_message).apply {
                     val now = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
                     val message = it.latest?.message

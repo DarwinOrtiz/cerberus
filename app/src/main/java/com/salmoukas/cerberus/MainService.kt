@@ -3,7 +3,6 @@ package com.salmoukas.cerberus
 import android.app.*
 import android.content.Context
 import android.content.Intent
-import android.graphics.Color
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
@@ -292,7 +291,7 @@ class MainService : Service() {
             .setContentText(text)
             .setStyle(Notification.BigTextStyle().bigText(text))
             .setSmallIcon(R.drawable.ic_bomb_light)
-            .setColor(Color.RED)
+            .setColor(getColor(R.color.status_error))
             .setColorized(true)
             .setWhen(System.currentTimeMillis())
             .setShowWhen(true)

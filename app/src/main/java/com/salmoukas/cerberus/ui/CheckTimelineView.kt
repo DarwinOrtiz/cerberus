@@ -2,10 +2,10 @@ package com.salmoukas.cerberus.ui
 
 import android.content.Context
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.Paint
 import android.util.AttributeSet
 import android.view.View
+import com.salmoukas.cerberus.R
 import com.salmoukas.cerberus.ui.model.TimeRange
 import com.salmoukas.cerberus.ui.model.TimeRangeWithCheckStatus
 import kotlin.math.ceil
@@ -14,12 +14,6 @@ import kotlin.math.min
 
 
 class CheckTimelineView : View {
-
-    companion object {
-        const val COLOR_UNKNOWN = Color.LTGRAY
-        const val COLOR_OK = Color.GREEN
-        const val COLOR_ERROR = Color.RED
-    }
 
     data class ViewModel(
         val range: TimeRange,
@@ -69,10 +63,7 @@ class CheckTimelineView : View {
         setMeasuredDimension(MeasureSpec.getSize(widthMeasureSpec), height)
     }
 
-    private val paintBg = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color =
-            COLOR_UNKNOWN
-    }
+    private val paintBg = Paint(Paint.ANTI_ALIAS_FLAG)
 
     override fun onDraw(canvas: Canvas?) {
         if (canvas == null || viewModel == null) {
@@ -84,8 +75,9 @@ class CheckTimelineView : View {
             0f,
             width.toFloat(),
             height.toFloat(),
-            paintBg.apply { color =
-                COLOR_UNKNOWN
+            paintBg.apply {
+                color =
+                    context.getColor(R.color.status_unknown)
             })
 
         val xTransform =
@@ -97,7 +89,10 @@ class CheckTimelineView : View {
                 0f,
                 ceil(xTransform(it.begin)),
                 height.toFloat(),
-                paintBg.apply { color = if (it.ok) COLOR_OK else COLOR_ERROR }
+                paintBg.apply {
+                    color =
+                        if (it.ok) context.getColor(R.color.status_ok) else context.getColor(R.color.status_error)
+                }
             )
         }
     }

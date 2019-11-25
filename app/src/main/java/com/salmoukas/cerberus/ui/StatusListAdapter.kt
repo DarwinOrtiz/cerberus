@@ -1,6 +1,5 @@
 package com.salmoukas.cerberus.ui
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -73,9 +72,9 @@ class StatusListAdapter :
                     }
                     setBackgroundColor(
                         when {
-                            it.stale -> Color.YELLOW
-                            it.latest?.ok == true -> Color.GREEN
-                            else -> Color.RED
+                            it.stale -> context.getColor(R.color.status_stale)
+                            it.latest?.ok == true -> context.getColor(R.color.status_ok)
+                            else -> context.getColor(R.color.status_error)
                         }
                     )
                 }

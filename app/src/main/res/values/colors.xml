@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="status_ok">#2e7d32</color>
-    <color name="status_error">#c62828</color>
-    <color name="status_stale">#f9a825</color>
+    <color name="status_ok">#43a047</color>
+    <color name="status_error">#e53935</color>
+    <color name="status_stale">#fdd835</color>
     <color name="status_unknown">#424242</color>
 </resources>

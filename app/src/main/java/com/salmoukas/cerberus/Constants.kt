@@ -22,7 +22,7 @@ class Constants {
         // check status
         const val CHECK_STATUS_RETROGRADE_VALIDITY_MINUTES = CHECK_CYCLE_INTERVAL_MINUTES + 5
         const val CHECK_STATUS_REFRESH_INTERVAL_MINUTES = 1
-        const val CHECK_STATUS_LATEST_PERIOD_MINUTES = 60 * 24 // = 1 day
+        const val CHECK_STATUS_LATEST_PERIOD_MINUTES = 60 * 6 // = 6 hours
         const val CHECK_STATUS_STALE_AFTER_MINUTES = CHECK_CYCLE_INTERVAL_MINUTES * 3
     }
 }

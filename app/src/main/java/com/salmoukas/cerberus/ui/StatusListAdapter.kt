@@ -1,5 +1,6 @@
 package com.salmoukas.cerberus.ui
 
+import android.graphics.drawable.GradientDrawable
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -47,8 +48,8 @@ class StatusListAdapter :
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         if (adapterModel != null) {
             adapterModel!!.checks[position].let {
-                holder.itemView.findViewById<TextView>(R.id.status_item_url_view).text = it.url
-                holder.itemView.findViewById<TextView>(R.id.status_item_text_view).apply {
+                holder.itemView.findViewById<TextView>(R.id.status_item_url).text = it.url
+                holder.itemView.findViewById<TextView>(R.id.status_item_message).apply {
                     val now = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis())
                     val message = it.latest?.message
                         ?: resources.getString(R.string.status_list_status_unknown)
@@ -70,7 +71,9 @@ class StatusListAdapter :
                             )
                         }
                     }
-                    setBackgroundColor(
+                }
+                holder.itemView.findViewById<View>(R.id.status_item_indicator).apply {
+                    (background as GradientDrawable).setColor(
                         when {
                             it.stale -> context.getColor(R.color.status_stale)
                             it.latest?.ok == true -> context.getColor(R.color.status_ok)

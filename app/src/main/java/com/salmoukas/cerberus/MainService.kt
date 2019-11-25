@@ -115,6 +115,8 @@ class MainService : Service() {
                     var error: String? = null
                     try {
                         val request = URL(it.value.url).openConnection() as HttpURLConnection
+                        request.connectTimeout = TimeUnit.SECONDS.toMillis(30L).toInt()
+                        request.readTimeout = TimeUnit.SECONDS.toMillis(30L).toInt()
                         try {
                             statusCode = request.responseCode
                             BufferedReader(

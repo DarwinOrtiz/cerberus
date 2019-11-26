@@ -27,7 +27,7 @@ class MainActivity : AppCompatActivity() {
         // as you specify a parent activity in AndroidManifest.xml.
         return when (item.itemId) {
             R.id.menu_main_action_check_now -> {
-                MainService.ctlRunCheckCycle(this)
+                MainService.ctlRunCheckCycle(this, MainService.RunCheckCycle.NOW)
                 true
             }
             R.id.menu_main_action_settings -> true

@@ -16,7 +16,7 @@ class MainReceiver : BroadcastReceiver() {
         if (context != null) {
             // perform check cycle if requested
             if (intent?.action == Constants.CHECK_CYCLE_ACTION) {
-                MainService.ctlRunCheckCycle(context)
+                MainService.ctlRunCheckCycle(context, MainService.RunCheckCycle.NOW)
             }
             // start main service (if not started)
             else {

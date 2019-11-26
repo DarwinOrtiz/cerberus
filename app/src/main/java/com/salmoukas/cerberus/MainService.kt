@@ -4,6 +4,7 @@ import android.app.*
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
+import android.net.Network
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
@@ -21,11 +22,33 @@ import java.util.concurrent.TimeUnit
 
 class MainService : Service() {
 
+    enum class RunCheckCycle {
+        NOW,
+        IF_NECESSARY,
+        SCHEDULE_ONLY
+    }
+
     @Volatile
     private var worker: Thread? = null
 
     @Volatile
     private var lastErrorNotification: Long? = null
+
+    // TODO: we should use the latest successful check result entry from
+    //       database as reference and not this variable
+    @Volatile
+    private var lastCheckCycleRun: Long? = null
+
+    private val networkStatusCallback = object : ConnectivityManager.NetworkCallback() {
+
+        override fun onAvailable(network: Network) {
+            Log.i(
+                "MAIN_SERVICE/NETWORK_STATUS",
+                "new network available, trigger check cycle..."
+            )
+            ctlRunCheckCycle(this@MainService, RunCheckCycle.IF_NECESSARY)
+        }
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -58,17 +81,27 @@ class MainService : Service() {
             Constants.MONITORING_PRIMARY_NOTIFICATION_ID,
             buildPrimaryNotification(null, null)
         )
-    }
 
-    private fun isNetworkAvailable(): Boolean {
-        val connectivityManager =
-            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        return connectivityManager.activeNetwork != null
+        // add network status callback
+        (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
+            .registerDefaultNetworkCallback(networkStatusCallback)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
-        if (intent?.extras?.getBoolean("runCheckCycle") == true && worker == null) {
+        val runCheckCycle =
+            (intent?.extras?.get("runCheckCycle") as RunCheckCycle?) ?: RunCheckCycle.SCHEDULE_ONLY
+
+        val runNow = when {
+            runCheckCycle == RunCheckCycle.NOW -> true
+            runCheckCycle == RunCheckCycle.IF_NECESSARY
+                    && (lastCheckCycleRun == null || (System.currentTimeMillis() - lastCheckCycleRun!!) >= TimeUnit.MINUTES.toMillis(
+                Constants.CHECK_CYCLE_INTERVAL_MINUTES.toLong()
+            )) -> true
+            else -> false
+        }
+
+        if (runNow && worker == null) {
             // ensure job can be executed properly
             val wl = (getSystemService(Context.POWER_SERVICE) as PowerManager)
                 .newWakeLock(
@@ -82,7 +115,8 @@ class MainService : Service() {
             // run worker
             worker = Thread {
                 try {
-                    if (isNetworkAvailable()) {
+                    if ((getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager).activeNetwork != null) {
+                        lastCheckCycleRun = System.currentTimeMillis()
                         checkCycleWork()
                     } else {
                         Log.i(
@@ -320,6 +354,10 @@ class MainService : Service() {
     override fun onDestroy() {
         super.onDestroy()
 
+        // remove network status callback
+        (getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
+            .unregisterNetworkCallback(networkStatusCallback)
+
         // join worker
         val w = worker
         try {
@@ -339,7 +377,10 @@ class MainService : Service() {
     }
 
     companion object {
-        fun ctlStartService(context: Context, runCheckCycle: Boolean = false) {
+        fun ctlStartService(
+            context: Context,
+            runCheckCycle: RunCheckCycle = RunCheckCycle.SCHEDULE_ONLY
+        ) {
 
             // ensure service can start properly
             (context.applicationContext.getSystemService(Context.POWER_SERVICE) as PowerManager)
@@ -350,7 +391,7 @@ class MainService : Service() {
                 .acquire(6 * 1000)
 
             // start main service (if not started)
-            Log.d("MAIN_SERVICE", if (runCheckCycle) "run check cycle" else "start service")
+            Log.d("MAIN_SERVICE", "trigger service with $runCheckCycle")
             context.applicationContext.startForegroundService(
                 Intent(
                     context.applicationContext,
@@ -359,8 +400,8 @@ class MainService : Service() {
             )
         }
 
-        fun ctlRunCheckCycle(context: Context) {
-            ctlStartService(context, true)
+        fun ctlRunCheckCycle(context: Context, mode: RunCheckCycle) {
+            ctlStartService(context, mode)
         }
     }
 }

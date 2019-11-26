@@ -3,6 +3,7 @@ package com.salmoukas.cerberus
 import android.app.*
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.os.IBinder
 import android.os.PowerManager
 import android.util.Log
@@ -59,6 +60,12 @@ class MainService : Service() {
         )
     }
 
+    private fun isNetworkAvailable(): Boolean {
+        val connectivityManager =
+            getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        return connectivityManager.activeNetwork != null
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
 
         if (intent?.extras?.getBoolean("runCheckCycle") == true && worker == null) {
@@ -75,7 +82,14 @@ class MainService : Service() {
             // run worker
             worker = Thread {
                 try {
-                    checkCycleWork()
+                    if (isNetworkAvailable()) {
+                        checkCycleWork()
+                    } else {
+                        Log.i(
+                            "MAIN_SERVICE/WORKER",
+                            "no network available, skipping check cycle..."
+                        )
+                    }
                     deriveNotificationStatus()
                 } finally {
                     MainReceiver.ctlScheduleCheckCycle(this)
